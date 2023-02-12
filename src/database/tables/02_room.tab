@@ -1,0 +1,24 @@
+create table ts_room
+(
+    id bigserial,
+    number smallint,
+    name varchar(128),
+    password varchar(128),
+    max_number_player smallint,
+    owner_id bigint,
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz,
+    constraint ts_room_owner_id_uindex unique (owner_id),
+    constraint ts_room_ts_owner_id_fk foreign key (owner_id) references public.ts_user(id)
+
+);
+create unique index ts_room_id_uindex
+	on ts_room (id);
+
+alter table ts_room
+	add constraint ts_room_pk
+		primary key (id);

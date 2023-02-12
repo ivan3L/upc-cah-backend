@@ -1,0 +1,23 @@
+create table ts_white_card
+(
+    id bigserial,
+    answer varchar(512),
+    is_correct boolean,
+    black_card_id smallint
+        constraint ts_white_card_ts_black_card_id_fk
+            references ts_black_card,
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz,
+    constraint ts_white_card_black_card_id_uindex unique (black_card_id)
+
+);
+create unique index ts_white_card_id_uindex
+	on ts_white_card (id);
+
+alter table ts_white_card
+	add constraint ts_white_card_pk
+		primary key (id);

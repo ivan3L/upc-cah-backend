@@ -1,0 +1,18 @@
+create table ts_deck
+(
+    id bigserial,
+    name varchar(64),
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz
+
+);
+create unique index ts_deck_id_uindex
+	on ts_deck (id);
+
+alter table ts_deck
+	add constraint ts_deck_pk
+		primary key (id);

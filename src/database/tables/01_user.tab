@@ -1,0 +1,23 @@
+create table ts_user
+(
+    id bigserial,
+    email_address varchar(128),
+    password varchar(128),
+    firstname varchar(128),
+    lastname varchar(128),
+    profile_picture_url varchar(512),
+    user_type_id smallint,
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz
+
+);
+create unique index ts_user_id_uindex
+	on ts_user (id);
+
+alter table ts_user
+	add constraint ts_user_pk
+		primary key (id);

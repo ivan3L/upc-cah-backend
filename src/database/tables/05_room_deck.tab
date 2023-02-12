@@ -1,0 +1,24 @@
+create table ts_room_deck
+(
+    id bigserial,
+    room_id smallint
+        constraint ts_room_deck_ts_room_id_fk
+            references ts_room,
+    deck_id smallint
+        constraint ts_room_deck_ts_deck_id_fk
+            references ts_deck,
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz,
+    constraint ts_room_deck_room_id_uindex unique (room_id)
+
+);
+create unique index ts_room_deck_id_uindex
+	on ts_room_deck (id);
+
+alter table ts_room_deck
+	add constraint ts_room_deck_pk
+		primary key (id);

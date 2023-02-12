@@ -1,0 +1,22 @@
+create table ts_black_card
+(
+    id bigserial,
+    question varchar(512),
+    deck_id smallint
+        constraint ts_black_card_ts_deck_id_fk
+            references ts_deck,
+    created_by bigint,
+	updated_by bigint,
+	deleted_by bigint,
+	created_at timestamptz not null,
+	updated_at timestamptz,
+	deleted_at timestamptz,
+    constraint ts_black_card_deck_id_uindex unique (deck_id)
+
+);
+create unique index ts_black_card_id_uindex
+	on ts_black_card (id);
+
+alter table ts_black_card
+	add constraint ts_black_card_pk
+		primary key (id);
