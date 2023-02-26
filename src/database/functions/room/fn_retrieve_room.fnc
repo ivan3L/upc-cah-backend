@@ -81,6 +81,19 @@ create or replace function fn_retrieve_room(_param jsonb default '{}')
                     else true
                 end
             )
+            and (
+                case 
+                    when _param->'identificador' is not null
+                    then(
+                        case
+                            when _param->>'identificador' is null
+                            then identificador is null
+                            else lower(identificador) like lower(concat('%', _param->>'identificador', '%'))
+                        end
+                    )
+                    else true
+                end
+            )
         ) as rooms into data;
         return jsonb_build_object('data', data, 'error', error);
     end;

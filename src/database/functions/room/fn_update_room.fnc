@@ -27,6 +27,10 @@ create or replace function fn_update_room(_param jsonb)
                     update ts_room set owner_id = cast(_param->>'owner_id' as bigint)
                     where id = _id;
             end if;
+            if _param->'identificador' is not null then
+                    update ts_room set identificador = _param->>'identificador'
+                    where id = _id;
+            end if;
             if (_param->'updated_by' is not null) then
                     update ts_room set
                         updated_by = cast(_param->>'updated_by' as bigint),
