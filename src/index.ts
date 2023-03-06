@@ -21,15 +21,15 @@ const playersInRoom: PlayerInRoomModel  = {};
 
 io.on("connection", function (socket) {
   console.log("Nuevo cliente conectado");
-  // socket.handshake.query
   socket.on('crear-room', (data) => {
+    console.log("data",data)
       rooms.push({ roomName: `room-${data.roomName}`, players: [socket.id], namePlayer:[data.name] });
       socket.join(data.id);
       if (!playersInRoom[data.id])
       {
         playersInRoom[data.id] = [];
       }
-      playersInRoom[data.id].push({ id: socket.id, name: data.name })
+      playersInRoom[data.id].push({ id: socket.id, name: data.name, user:data.user })
       console.log("playersInRoom[data.id]", playersInRoom[data.id])
       io.to(data.id).emit("playersInRoom", playersInRoom[data.id] )
       console.log(`Se ha creado el room con id: ${data.id} y el usuario : ${data.name}`);
@@ -37,7 +37,7 @@ io.on("connection", function (socket) {
   socket.on('join-room', (data) => {
     if (data) {
     socket.join(data.id);
-    playersInRoom[data.id].push({ id: socket.id, name: data.name })
+    playersInRoom[data.id].push({ id: socket.id, name: data.name, user: data.user })
     console.log("playersInRoom[data.id]", playersInRoom[data.id])
     io.to(data.id).emit("playersInRoom", playersInRoom[data.id] )
     console.log(`Se ha unido al room con id: ${data.id} el usuario : ${data.name}`);
@@ -46,8 +46,8 @@ io.on("connection", function (socket) {
   }
 
   });
-  socket.on("disconnect", function () {
-    console.log("Cliente desconectado");
+  socket.on("disconnect", () => {
+    console.log(`usuario desconectado`)
   });
 });
 
