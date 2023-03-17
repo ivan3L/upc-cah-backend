@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import {roomModel} from './models/rooms'
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
+import { GameModel } from "./interfaces/Game";
 const server = http.createServer(app);
 const port = 8080;
 
@@ -18,9 +19,14 @@ server.listen(port, () => {
   });
 let rooms: roomModel[] = [];
 const playersInRoom: PlayerInRoomModel  = {};
+const games: GameModel  = {};
 
+//Cliente se conecta
 io.on("connection", function (socket) {
+  //Log Cliente conectado
   console.log("Nuevo cliente conectado");
+
+  //Evento crear-room
   socket.on('crear-room', (data) => {
       rooms.push({ roomName: `room-${data.roomName}`, players: [socket.id], namePlayer:[data.name] });
       socket.join(data.idRoom);
@@ -32,6 +38,8 @@ io.on("connection", function (socket) {
       io.to(data.idRoom).emit("playersInRoom", playersInRoom[data.idRoom] )
       console.log(`Se ha creado el room con id: ${data.idRoom} y el usuario : ${data.name}`);
   });
+
+  //Evento join-room
   socket.on('join-room', (data) => {
     if (data) {
     socket.join(data.idRoom);
@@ -42,6 +50,8 @@ io.on("connection", function (socket) {
     console.log("Error al emitir el evento")
   }
   });
+
+  //Evento leave-room
   socket.on('leave-room', (data) => {
     console.log("data1",data)
     const playeinRoomLeavePlayer =  playersInRoom[data.idRoom].filter((item: any) => item.idUser !== data.idUser)
@@ -55,10 +65,34 @@ io.on("connection", function (socket) {
       console.log("playersInRoom[data.idRoom] lenght",playersInRoom)
     }
     io.to(data.idRoom).emit("playersInRoom", playersInRoom[data.idRoom] )
-  })
+  });
+
+
+  //Evento start-game
+  socket.on('start-game', (data) =>{
+    console.log("data",data)
+    //esto debería venir de data, pero por el momento lo seteo aquí
+    data.idRoom = "8e9fa994-f793-4a01-8353-24bce5af4c9d"
+    console.log("idRoom",data.idRoom)
+    data.rounds = 8
+    console.log("rounds",data.rounds)
+    //
+    if (!games[data.idRoom])
+    {
+      games[data.idRoom] = [];
+    }
+    games[data.idRoom].push({ id: data.idRoom, rounds: data.rounds, rondaActual: 1, czar: playersInRoom[data.idRoom][0] })
+    console.log(games[data.idRoom]);
+    io.to(data.idRoom).emit("new-round", games[data.idRoom] )
+  });
+
+
+  //Evento disconnect
   socket.on("disconnect", () => {
     console.log(`usuario desconectado`)
   });
+
+  
 });
 
 
