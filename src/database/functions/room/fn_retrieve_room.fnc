@@ -94,6 +94,19 @@ create or replace function fn_retrieve_room(_param jsonb default '{}')
                     else true
                 end
             )
+            and (
+                case 
+                    when _param->'rounds' is not null
+                    then(
+                        case
+                            when _param->>'rounds' is null
+                            then rounds is null
+                            else rounds = cast(_param->>'rounds' as bigint)
+                        end
+                    )
+                    else true
+                end
+            )
         ) as rooms into data;
         return jsonb_build_object('data', data, 'error', error);
     end;

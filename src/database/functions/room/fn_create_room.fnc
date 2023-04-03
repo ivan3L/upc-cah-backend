@@ -16,6 +16,7 @@ create or replace function fn_create_room(_param jsonb)
                 max_number_player,
                 owner_id,
                 identificador,
+                rounds,
                 created_at
             ) values (
                 next_room_id,
@@ -25,6 +26,7 @@ create or replace function fn_create_room(_param jsonb)
                 cast(_param->>'max_number_player' as smallint),
                 cast(_param->>'owner_id' as bigint),
                 _param->>'identificador',
+                cast(_param->>'rounds' as bigint),
                 current_timestamp
             );
             select fn_retrieve_room(jsonb_build_object('id', next_room_id))->'data'->0 into data;
