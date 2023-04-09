@@ -124,7 +124,7 @@ try {
       console.log(games[data.idRoom]);
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
 
-      io.to(data.idRoom).emit("start-game", games[data.idRoom]);
+      io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
       //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
       setTimeout(() => {
         io.to(data.idRoom).emit("round-ended", playersInRoom[data.idRoom]);
