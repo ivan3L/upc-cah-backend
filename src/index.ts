@@ -44,6 +44,7 @@ try {
         idUser: data.user.id,
         owner: data.owner,
         cartaElegida: "null",
+        score: 0,
       });
       const newPlayer =
         playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
@@ -68,6 +69,7 @@ try {
           idUser: data.user.id,
           owner: data.owner,
           cartaElegida: "null",
+          score: 0,
         });
         // const newPlayer =
         //   playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
@@ -125,9 +127,12 @@ try {
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
 
       io.to(data.idRoom).emit("start-game", games[data.idRoom]);
-      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
+      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios para que el zar pueda elegir su respuesta entre el pool de respuestas
       setTimeout(() => {
-        io.to(data.idRoom).emit("round-ended", playersInRoom[data.idRoom]);
+        io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom]);
+      }, 30000);
+      setTimeout(() => {
+        io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
       }, 30000);
     });
 
@@ -136,37 +141,65 @@ try {
       //recibe estructura user y carta elegida como "whiteCard"
       console.log("data", data);
       //Se setea carta elegida por el usuario en el arreglo de usuarios
-      playersInRoom[data.idRoom][data.user.id].seleccionActual = data.whiteCard;
+      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
       console.log(
         "carta elegida: ",
-        playersInRoom[data.idRoom][data.user.id].seleccionActual
+        playersInRoom[data.idRoom][data.user.id].cartaElegida
       );
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
-      //el total de respuesta se envía a través de "round-ended" que es un evento que
+      //el total de respuesta se envía a través de "start-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)
     });
+
+    //Evento czar-answer-selection
+    socket.on("czar-answer-selection", (data) => {
+      //recibe estructura user y carta elegida como "whiteCard" del zar
+      console.log("data", data);
+      //Se setea carta elegida por el usuario en el arreglo de usuarios
+      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
+      console.log(
+        "carta elegida: ",
+        playersInRoom[data.idRoom][data.user.id].cartaElegida
+      );
+      if(data.flag_correct_answer == 1){
+        playersInRoom[data.idRoom][data.user.id].score = playersInRoom[data.idRoom][data.user.id].score + 1
+      }
+      //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
+      //el total de respuesta se envía a través de "end-czar-answer-selection" que es un evento que
+      //debe estar escuchándose en el cliente(front)
+    });
+
 
     //Evento new-round
     socket.on("new-round", (data) => {
       console.log("data", data);
-      //Se suma 1 ronda
+      //Se suma 1 ronda para actualizar número de ronda actual
       games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
-      //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
-      if (
-        games[data.idRoom].czarIndex + 1 <
-        playersInRoom[data.idRoom].length
-      ) {
-        games[data.idRoom].czarIndex = games[data.idRoom].czarIndex + 1;
-      } else {
-        games[data.idRoom].czarIndex = 0;
+      //Si fue la última ronda, termina el juego
+      if(games[data.idRoom].rondaActual - 1 == games[data.idRoom].rounds){
+        io.to(data.idRoom).emit("game-ended", playersInRoom[data.idRoom]);
       }
-      //Se envía al cliente la variable game con idroom, rondas, rondaactual y el player que es czar
-      console.log(games[data.idRoom]);
-      io.to(data.idRoom).emit("new-round", games[data.idRoom]);
-      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
-      setTimeout(() => {
-        io.to(data.idRoom).emit("round-ended", playersInRoom[data.idRoom]);
-      }, 30000);
+      else{
+        //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
+        if (
+          games[data.idRoom].czarIndex + 1 <
+          playersInRoom[data.idRoom].length
+        ) {
+          games[data.idRoom].czarIndex = games[data.idRoom].czarIndex + 1;
+        } else {
+          games[data.idRoom].czarIndex = 0;
+        }
+        //Se envía al cliente la variable game con idroom, rondas, rondaactual y el player que es czar
+        console.log(games[data.idRoom]);
+        io.to(data.idRoom).emit("new-round", games[data.idRoom]);
+        //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios para que el zar pueda elegir su respuesta entre el pool de respuestas
+        setTimeout(() => {
+          io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 30000);
+        setTimeout(() => {
+          io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 30000);
+      }
     });
 
     //Evento disconnect
