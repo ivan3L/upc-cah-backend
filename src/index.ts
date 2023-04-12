@@ -148,8 +148,8 @@ try {
       console.log(games[data.idRoom]);
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
 
-      io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
-      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
+      io.to(data.idRoom).emit("start-game", games[data.idRoom]);
+      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios para que el zar pueda elegir su respuesta entre el pool de respuestas
       setTimeout(() => {
         io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom]);
       }, 30000);

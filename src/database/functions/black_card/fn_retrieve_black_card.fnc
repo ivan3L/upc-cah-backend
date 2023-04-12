@@ -42,7 +42,7 @@ create or replace function fn_retrieve_black_card(_param jsonb default '{}')
                     else true
                 end
             )
-        ) as black_cards into data;
+        ) as rooms into data;
         return jsonb_build_object('data', data, 'error', error);
     end;
 $$;
