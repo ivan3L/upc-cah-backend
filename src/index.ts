@@ -43,7 +43,7 @@ try {
         user: data.user,
         idUser: data.user.id,
         owner: data.owner,
-        cartaElegida: "null",
+        cartaElegida: {},
         score: 0,
       });
       const newPlayer =
@@ -68,7 +68,7 @@ try {
           user: data.user,
           idUser: data.user.id,
           owner: data.owner,
-          cartaElegida: "null",
+          cartaElegida: {},
           score: 0,
         });
         // const newPlayer =
@@ -123,9 +123,8 @@ try {
         czar: playersInRoom[data.idRoom][0],
         czarIndex: 0,
       });
-      console.log(games[data.idRoom]);
+      console.log("GAME",games[data.idRoom]);
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
-
       io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
       //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
       setTimeout(() => {
@@ -141,6 +140,18 @@ try {
       //recibe estructura user y carta elegida como "whiteCard"
       console.log("data", data);
       //Se setea carta elegida por el usuario en el arreglo de usuarios
+      console.log(
+        "playersInRoom[data.idRoom] ",
+        playersInRoom[data.idRoom]
+      );
+      console.log(
+        "playersInRoom ",
+        playersInRoom
+      );
+      console.log(
+        "carta elegida: ",
+        playersInRoom[data.idRoom][data.user.id].cartaElegida
+      );
       playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
       console.log(
         "carta elegida: ",
@@ -156,11 +167,16 @@ try {
       //recibe estructura user y carta elegida como "whiteCard" del zar
       console.log("data", data);
       //Se setea carta elegida por el usuario en el arreglo de usuarios
-      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
+      console.log(
+        "playersInRoom ",
+        playersInRoom[data.idRoom]
+      );
       console.log(
         "carta elegida: ",
         playersInRoom[data.idRoom][data.user.id].cartaElegida
       );
+      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
+      
       if(data.flag_correct_answer == 1){
         playersInRoom[data.idRoom][data.user.id].score = playersInRoom[data.idRoom][data.user.id].score + 1
       }
