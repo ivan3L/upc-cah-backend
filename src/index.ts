@@ -108,7 +108,6 @@ try {
 
     //Evento leave-room
     socket.on("leave-room", (data) => {
-      console.log("data1", data);
       const playeinRoomLeavePlayer = playersInRoom[data.idRoom].filter(
         (item: any) => item.idUser !== data.idUser
       );
@@ -131,6 +130,10 @@ try {
 
     //Evento start-game
     socket.on("start-game", (data) => {
+      console.log(
+        "playersInRoom[data.idRoom] ",
+        playersInRoom[data.idRoom]
+      );
       //recibe idRoom y rounds
       console.log("data", data);
       // Se crea game
@@ -174,7 +177,10 @@ try {
         "carta elegida: ",
         playersInRoom[data.idRoom][data.user.id].cartaElegida
       );
-      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
+      const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => objeto.user.id == data.user.id)
+      console.log("indice", indice)
+      console.log("playersInRoom[data.idRoom][indice]",playersInRoom[data.idRoom][indice])
+      playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       console.log(
         "carta elegida: ",
         playersInRoom[data.idRoom][data.user.id].cartaElegida
