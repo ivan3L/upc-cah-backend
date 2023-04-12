@@ -37,7 +37,6 @@ try {
       if (!playersInRoom[data.idRoom]) {
         playersInRoom[data.idRoom] = [];
       }
-      /*
       playersInRoom[data.idRoom].push({
         id: socket.id,
         name: data.name,
@@ -47,16 +46,6 @@ try {
         cartaElegida: "null",
         score: 0,
       });
-      */
-      playersInRoom[data.idRoom][data.user.id] = {
-        id: socket.id,
-        name: data.name,
-        user: data.user,
-        idUser: data.user.id,
-        owner: data.owner,
-        cartaElegida: {},
-        score: 0,
-      };
       const newPlayer =
         playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
       io.to(data.idRoom).emit("playersInRoom", {
@@ -73,26 +62,15 @@ try {
       if (data) {
         console.log("data", data);
         socket.join(data.idRoom);
-        /*
         playersInRoom[data.idRoom].push({
           id: socket.id,
           name: data.user.name,
           user: data.user,
           idUser: data.user.id,
           owner: data.owner,
-          cartaElegida: {},
+          cartaElegida: "null",
           score: 0,
         });
-        */
-        playersInRoom[data.idRoom][data.user.id] = {
-          id: socket.id,
-          name: data.name,
-          user: data.user,
-          idUser: data.user.id,
-          owner: data.owner,
-          cartaElegida: {},
-          score: 0,
-        };
         // const newPlayer =
         //   playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
         io.to(data.idRoom).emit("playersInRoom", {
