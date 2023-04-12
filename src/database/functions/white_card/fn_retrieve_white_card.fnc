@@ -55,7 +55,7 @@ create or replace function fn_retrieve_white_card(_param jsonb default '{}')
                     else true
                 end
             )
-        ) as rooms into data;
+        ) as white_cards into data;
         return jsonb_build_object('data', data, 'error', error);
     end;
 $$;

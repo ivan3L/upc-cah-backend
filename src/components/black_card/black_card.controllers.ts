@@ -1,5 +1,5 @@
-import express from 'express'
-import { Get, Query, Route, Tags, Request, Body, Patch, Post } from 'tsoa'
+
+import { Get, Query, Route, Tags, Body, Patch, Post } from 'tsoa'
 import { Black_Card, Black_CardDto, Black_CardUpdate } from './black_card.model';
 
 import { ErrorException } from '../../interfaces';
@@ -14,9 +14,10 @@ export class Black_CardController implements ICrudOperationsController {
     constructor(private readonly service = black_cardServiceInstance) { }
 
     @Get()
-    async retrieve(@Request() req: express.Request): Promise<ResponseApi<Black_Card[]>> {
-        const data = await this.service.retrieve(req.query as Partial<Black_Card>)
+    async retrieve(): Promise<any> {
+        const data = await this.service.retrieve()
         if (data instanceof ErrorException) return { error: data.error };
+        console.log("dataCONTROLLER",data)
         return { data };
     }
 
