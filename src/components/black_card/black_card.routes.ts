@@ -7,7 +7,8 @@ const router = Router();
 
 router.get('/', async (req, res, next) => {
     try {
-        const data = await black_cardControllerInstance.retrieve(req)
+        const data = await black_cardControllerInstance.retrieve()
+        console.log("dataroutes",data)
         if (data instanceof ErrorException) return res.status(500).json(data)
         return res.status(200).json(data)
     } catch (error) {
