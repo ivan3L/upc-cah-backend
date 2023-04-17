@@ -20,14 +20,11 @@ export class Black_CardService extends CrudService<Black_Card, Black_CardDto, Bl
       black_card_id: blackCard[0].id
     })
     if (whiteCard instanceof ErrorException) return whiteCard;
-    console.log("blackCard",blackCard)
     const cards: any = []
     cards.push(blackCard)
     cards.push(whiteCard)
     // cards.black = blackCard
     // cards.white = whiteCard
-    console.log("blackCard",blackCard)
-    console.log("cardsSERVICE",cards)
     return cards
   }
 }

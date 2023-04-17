@@ -108,12 +108,8 @@ try {
 
     //Evento start-game
     socket.on("start-game", (data) => {
-      console.log(
-        "playersInRoom[data.idRoom] ",
-        playersInRoom[data.idRoom]
-      );
+      console.log("START GAME", playersInRoom[data.idRoom])
       //recibe idRoom y rounds
-      console.log("data", data);
       // Se crea game
       if (!games[data.idRoom]) {
         games[data.idRoom] = [];
@@ -131,38 +127,25 @@ try {
       io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
       //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
       setTimeout(() => {
-        io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom]);
-      }, 30000);
-      setTimeout(() => {
-        io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
-      }, 30000);
+        console.log("CONSOLE.LOG start-czar-answer-selection")
+        io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom])
+        setTimeout(() => {
+          console.log("CONSOLE.LOG end-czar-answer-selection")
+          io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 5000);;
+      }, 5000);
+
     });
 
     //Evento answer-selection
     socket.on("answer-selection", (data) => {
       //recibe estructura user y carta elegida como "whiteCard"
-      console.log("data", data);
-      //Se setea carta elegida por el usuario en el arreglo de usuarios
-      console.log(
-        "playersInRoom[data.idRoom] ",
-        playersInRoom[data.idRoom]
-      );
-      console.log(
-        "playersInRoom ",
-        playersInRoom
-      );
-      console.log(
-        "carta elegida: ",
-        playersInRoom[data.idRoom][data.user.id].cartaElegida
-      );
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => objeto.user.id == data.user.id)
       console.log("indice", indice)
       console.log("playersInRoom[data.idRoom][indice]",playersInRoom[data.idRoom][indice])
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
-      console.log(
-        "carta elegida: ",
-        playersInRoom[data.idRoom][data.user.id].cartaElegida
-      );
+      console.log("playersInRoom[data.idRoom]",playersInRoom[data.idRoom])
+
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "start-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)

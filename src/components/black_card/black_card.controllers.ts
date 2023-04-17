@@ -17,7 +17,6 @@ export class Black_CardController implements ICrudOperationsController {
     async retrieve(): Promise<any> {
         const data = await this.service.retrieve()
         if (data instanceof ErrorException) return { error: data.error };
-        console.log("dataCONTROLLER",data)
         return { data };
     }
 
