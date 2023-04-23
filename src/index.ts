@@ -108,8 +108,10 @@ try {
 
     //Evento start-game
     socket.on("start-game", (data) => {
-      console.log("START GAME", playersInRoom[data.idRoom])
-      //recibe idRoom y rounds
+      console.log("DATASTARGAME",data)
+      //recibe idRoom, rounds, cards_black, white_cards
+      // cards_black -> elegir de forma aleatoria 1 
+      // OBJETO DE CARD_BLACK {ID, QUESTION, DECK_ID}
       // Se crea game
       if (!games[data.idRoom]) {
         games[data.idRoom] = [];
@@ -127,13 +129,11 @@ try {
       io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
       //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
       setTimeout(() => {
-        console.log("CONSOLE.LOG start-czar-answer-selection")
         io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom])
         setTimeout(() => {
-          console.log("CONSOLE.LOG end-czar-answer-selection")
           io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
-        }, 5000);;
-      }, 5000);
+        }, 30000);
+      }, 30000);
 
     });
 
@@ -177,7 +177,6 @@ try {
 
     //Evento new-round
     socket.on("new-round", (data) => {
-      console.log("data", data);
       //Se suma 1 ronda para actualizar número de ronda actual
       games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
       //Si fue la última ronda, termina el juego

@@ -18,7 +18,7 @@ router.use('/black_card',black_card)
 router.use('/deck', deck)
 router.use('/room_deck',room_deck)
 router.use('/user_type',user_type)
-router.use('white_card',white_card)
+router.use('/white_card',white_card)
 router.use('/google', googlelogin)
 
 export default router;
