@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import { roomModel } from "./models/rooms";
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
 import { GameModel } from "./interfaces/Game";
+//import { PlayersCurrentWhiteCardsModel } from "./interfaces/PlayersCurrentWhiteCards";
 const server = http.createServer(app);
 const port = 8080;
 
@@ -19,6 +20,7 @@ server.listen(port, () => {
 let rooms: roomModel[] = [];
 const playersInRoom: PlayerInRoomModel = {};
 const games: GameModel = {};
+//const playersCurrentWhiteCards: PlayersCurrentWhiteCardsModel = {};
 
 //Cliente se conecta
 try {
@@ -70,6 +72,7 @@ try {
           owner: data.owner,
           cartaElegida: "null",
           score: 0,
+          cartasBlancas: [],
         });
         // const newPlayer =
         //   playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
@@ -123,6 +126,9 @@ try {
         rondaActual: 1,
         czar: playersInRoom[data.idRoom][0],
         czarIndex: 0,
+        currentBlackCard: "BlackCard",
+        currentWhiteCards: ["White Card 1","White Card 2","White Card 3","White Card 4","White Card 5","White Card 6","White Card 7"],
+        currentCorrectWhiteCard: "CorrectWhiteCard",
       });
       console.log("GAME",games[data.idRoom]);
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
