@@ -70,7 +70,7 @@ try {
           user: data.user,
           idUser: data.user.id,
           owner: data.owner,
-          cartaElegida: "null",
+          cartaElegida: {},
           score: 0,
           cartasBlancas: [],
         });
@@ -126,7 +126,7 @@ try {
         rondaActual: 1,
         czar: playersInRoom[data.idRoom][0],
         czarIndex: 0,
-        currentBlackCard: data.blackCards,
+        currentBlackCard: data.blackCards.slice(0, 1),
         currentWhiteCards: data.whiteCards.slice(0, 5),
         currentCorrectWhiteCard: "CorrectWhiteCard",
         temp: games[data.idroom]
@@ -134,9 +134,18 @@ try {
       console.log("GAME",games[data.idRoom]);
       io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
       io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
+
       //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
       setTimeout(() => {
-        io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom])
+        const selectedCards = []
+        for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
+          console.log("length,",Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length)
+          if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+            selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
+          }
+        }
+        console.log("Select-card",selectedCards)
+        io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
         setTimeout(() => {
           io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
         }, 30000);
@@ -147,9 +156,12 @@ try {
     //Evento answer-selection
     socket.on("answer-selection", (data) => {
       //recibe estructura user y carta elegida como "whiteCard"
-      const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => objeto.user.id == data.user.id)
-      console.log("indice", indice)
-      console.log("playersInRoom[data.idRoom][indice]",playersInRoom[data.idRoom][indice])
+      console.log("userID", data.userId)
+      const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
+        return objeto.user.id == data.userId
+      })
+      console.log("indice",indice)
+      console.log("indiceAcceso", playersInRoom[data.idRoom][indice])
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       console.log("playersInRoom[data.idRoom]",playersInRoom[data.idRoom])
 
