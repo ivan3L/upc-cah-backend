@@ -163,6 +163,7 @@ try {
         console.log("Select-card",selectedCards)
         io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
         setTimeout(() => {
+          console.log("end-emit-czar-selecction")
           io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
         }, 30000);
       }, 30000);
@@ -189,21 +190,14 @@ try {
     //Evento czar-answer-selection
     socket.on("czar-answer-selection", (data) => {
       //recibe estructura user y carta elegida como "whiteCard" del zar
-      console.log("data", data);
-      //Se setea carta elegida por el usuario en el arreglo de usuarios
-      console.log(
-        "playersInRoom ",
-        playersInRoom[data.idRoom]
-      );
-      console.log(
-        "carta elegida: ",
-        playersInRoom[data.idRoom][data.user.id].cartaElegida
-      );
-      playersInRoom[data.idRoom][data.user.id].cartaElegida = data.whiteCard;
+      const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
+        return objeto.user.id == data.userId
+      })
+      playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       
-      if(data.flag_correct_answer == 1){
-        playersInRoom[data.idRoom][data.user.id].score = playersInRoom[data.idRoom][data.user.id].score + 1
-      }
+      // if(data.flag_correct_answer == 1){
+      //   playersInRoom[data.idRoom][data.user.id].score = playersInRoom[data.idRoom][data.user.id].score + 1
+      // }
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "end-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)
