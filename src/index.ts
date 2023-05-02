@@ -1,5 +1,6 @@
 import app from "./app";
 import http from "http";
+import shuffle from 'lodash.shuffle'
 import { Server } from "socket.io";
 import { roomModel } from "./models/rooms";
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
@@ -116,6 +117,19 @@ try {
       // cards_black -> elegir de forma aleatoria 1 
       // OBJETO DE CARD_BLACK {ID, QUESTION, DECK_ID}
       // Se crea game
+
+      // ------------LOGICA PARA ELEGIR LAS CARTAS BLANCAS Y NEGRA SE VAN A MOSTRAR ------
+      var randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
+      var currentWhiteCards = data.whiteCards.filter((e: any) => {
+        return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
+      });
+      var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
+        return e.is_correct === true;
+      });
+      console.log("black",data.blackCards[randomBlackCardIndex])
+      console.log("currentWhiteCards",currentWhiteCards)
+      console.log("currentCorrectWhiteCard",currentCorrectWhiteCard)
+      // ----------------------------------------------------------------------------------
       if (!games[data.idRoom]) {
         games[data.idRoom] = [];
       }
@@ -126,9 +140,9 @@ try {
         rondaActual: 1,
         czar: playersInRoom[data.idRoom][0],
         czarIndex: 0,
-        currentBlackCard: data.blackCards.slice(0, 1),
-        currentWhiteCards: data.whiteCards.slice(0, 5),
-        currentCorrectWhiteCard: "CorrectWhiteCard",
+        currentBlackCard: data.blackCards[randomBlackCardIndex],
+        currentWhiteCards: currentWhiteCards,
+        currentCorrectWhiteCard: currentCorrectWhiteCard[0],
         temp: games[data.idroom]
       });
       console.log("GAME",games[data.idRoom]);
@@ -144,6 +158,8 @@ try {
             selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
           }
         }
+        selectedCards.push(currentCorrectWhiteCard[0])
+        shuffle(selectedCards)
         console.log("Select-card",selectedCards)
         io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
         setTimeout(() => {
