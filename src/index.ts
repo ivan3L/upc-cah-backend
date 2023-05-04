@@ -25,12 +25,12 @@ const games: GameModel = {};
 
 //Cliente se conecta
 try {
-  io.on("connection", function (socket) {
+  io.on("connection", function (socket:any) {
     //Log Cliente conectado
     console.log("Nuevo cliente conectado");
 
     //Evento crear-room
-    socket.on("crear-room", (data) => {
+    socket.on("crear-room", (data:any) => {
       rooms.push({
         roomName: `room-${data.roomName}`,
         players: [socket.id],
@@ -61,7 +61,7 @@ try {
     });
 
     //Evento join-room
-    socket.on("join-room", (data) => {
+    socket.on("join-room", (data:any) => {
       if (data) {
         console.log("data", data);
         socket.join(data.idRoom);
@@ -89,7 +89,7 @@ try {
     });
 
     //Evento leave-room
-    socket.on("leave-room", (data) => {
+    socket.on("leave-room", (data:any) => {
       const playeinRoomLeavePlayer = playersInRoom[data.idRoom].filter(
         (item: any) => item.idUser !== data.idUser
       );
@@ -111,7 +111,7 @@ try {
     });
 
     //Evento start-game
-    socket.on("start-game", (data) => {
+    socket.on("start-game", (data:any) => {
       //Si el juego no existe, se crea
       if(!games[data.idRoom])
       {
@@ -124,7 +124,6 @@ try {
         var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
           return e.is_correct === true;
         });
-        //console.log("AAAAAAAA.....CURRENT WHITE CARDS",currentWhiteCards);
         // ----------------------------------------------------------------------------------
         if (!games[data.idRoom]) {
           games[data.idRoom] = [];
@@ -169,6 +168,9 @@ try {
           currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
             return e.is_correct === true;
           });
+          games[data.idRoom].currentBlackCard = data.blackCards[randomBlackCardIndex];
+          games[data.idRoom].currentWhiteCards = currentWhiteCards;
+          games[data.idRoom].currentCorrectWhiteCard = currentCorrectWhiteCard[0];
          }
          //Se suma 1 a rondaActual
          games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
@@ -188,15 +190,15 @@ try {
           //console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           setTimeout(() => {
-            //console.log("acá2",playersInRoom[data.idRoom])
-            //console.log("acá",games[data.idRoom][0].czar)
+            console.log("acá2",playersInRoom[data.idRoom])
+            console.log("acá",games[data.idRoom][0].czar)
             const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
               return objeto.user.id == games[data.idRoom][0].czar.user.id
             })
             if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
               playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
             }
-            //console.log("score",playersInRoom[data.idRoom][indice])
+            console.log("score",playersInRoom[data.idRoom][indice])
             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
           }, 30000);
         }, 30000);
@@ -204,7 +206,7 @@ try {
     });
 
     //Evento answer-selection
-    socket.on("answer-selection", (data) => {
+    socket.on("answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard"
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
@@ -217,7 +219,7 @@ try {
     });
 
     //Evento czar-answer-selection
-    socket.on("czar-answer-selection", (data) => {
+    socket.on("czar-answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard" del zar
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
