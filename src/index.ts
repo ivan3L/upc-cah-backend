@@ -200,14 +200,10 @@ try {
     //Evento answer-selection
     socket.on("answer-selection", (data) => {
       //recibe estructura user y carta elegida como "whiteCard"
-      console.log("userID", data.userId)
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
       })
-      console.log("indice",indice)
-      console.log("indiceAcceso", playersInRoom[data.idRoom][indice])
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
-      console.log("playersInRoom[data.idRoom]",playersInRoom[data.idRoom])
 
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "start-czar-answer-selection" que es un evento que
@@ -221,10 +217,12 @@ try {
         return objeto.user.id == data.userId
       })
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
-      
-      // if(data.flag_correct_answer == 1){
-      //   playersInRoom[data.idRoom][data.user.id].score = playersInRoom[data.idRoom][data.user.id].score + 1
+
+      // if(data.whiteCard.id == games[data.idRoom][0].currentCorrectWhiteCard.id){
+      //   playersInRoom[data.idRoom][data.userId].score =  playersInRoom[data.idRoom][data.userId].score + 1
       // }
+      
+      
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "end-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)
