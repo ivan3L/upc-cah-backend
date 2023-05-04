@@ -112,89 +112,62 @@ try {
 
     //Evento start-game
     socket.on("start-game", (data) => {
-      //Si el juego no existe, se crea
-      if(!games[data.idRoom])
-      {
-        console.log("DATASTARTGAME",data)
-        // ------------LOGICA PARA inicializar LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
-        var randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
-        var currentWhiteCards = data.whiteCards.filter((e: any) => {
-          return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
-        });
-        var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
-          return e.is_correct === true;
-        });
-        console.log("black",data.blackCards[randomBlackCardIndex])
-        console.log("currentWhiteCards",currentWhiteCards)
-        console.log("currentCorrectWhiteCard",currentCorrectWhiteCard)
-        // ----------------------------------------------------------------------------------
-        if (!games[data.idRoom]) {
-          games[data.idRoom] = [];
-        }
-        //Se crea la variable juego
-        games[data.idRoom].push({
-          id: data.idRoom,
-          rounds: data.rounds,
-          rondaActual: 1,
-          czar: playersInRoom[data.idRoom][0],
-          czarIndex: 0,
-          currentBlackCard: data.blackCards[randomBlackCardIndex],
-          currentWhiteCards: currentWhiteCards,
-          currentCorrectWhiteCard: currentCorrectWhiteCard[0],
-        });
-        console.log("GAME",games[data.idRoom]);
-        io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
+      console.log("DATASTARGAME",data)
+      //recibe idRoom, rounds, cards_black, white_cards
+      // cards_black -> elegir de forma aleatoria 1 
+      // OBJETO DE CARD_BLACK {ID, QUESTION, DECK_ID}
+      // Se crea game
+
+      // ------------LOGICA PARA ELEGIR LAS CARTAS BLANCAS Y NEGRA SE VAN A MOSTRAR ------
+      var randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
+      var currentWhiteCards = data.whiteCards.filter((e: any) => {
+        return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
+      });
+      var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
+        return e.is_correct === true;
+      });
+      console.log("black",data.blackCards[randomBlackCardIndex])
+      console.log("currentWhiteCards",currentWhiteCards)
+      console.log("currentCorrectWhiteCard",currentCorrectWhiteCard)
+      // ----------------------------------------------------------------------------------
+      if (!games[data.idRoom]) {
+        games[data.idRoom] = [];
       }
-       //Si se excede de la cantidad de rondas elegidas, se emite un mensaje para terminar el juego y mostrar el scoreboard. Bucle termina
-       if( games[data.idRoom].rondaActual - 1 == games[data.idRoom].rounds)
-       {
-         io.to(data.idRoom).emit("game-ended-show-final-scoreboard", playersInRoom[data.idRoom]);
-       }
-       //Sino, inicia lógica del juego
-       else
-       {
-         //Se revisa si no es ronda inicial para poder re-setear variables
-         if(games[data.idRoom].rondaActual != 1)
-         {
-          //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
-          if (games[data.idRoom].czarIndex + 1 < playersInRoom[data.idRoom].length) {
-            games[data.idRoom].czarIndex = games[data.idRoom].czarIndex + 1;
-          } else {
-            games[data.idRoom].czarIndex = 0;
+      //Se envía al cliente la variable game con idroom, rondas, rondaactual y el player que es czar
+      games[data.idRoom].push({
+        id: data.idRoom,
+        rounds: data.rounds,
+        rondaActual: 1,
+        czar: playersInRoom[data.idRoom][0],
+        czarIndex: 0,
+        currentBlackCard: data.blackCards[randomBlackCardIndex],
+        currentWhiteCards: currentWhiteCards,
+        currentCorrectWhiteCard: currentCorrectWhiteCard[0],
+        temp: games[data.idroom]
+      });
+      console.log("GAME",games[data.idRoom]);
+      io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
+      io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
+
+      //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
+      setTimeout(() => {
+        const selectedCards = []
+        for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
+          console.log("length,",Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length)
+          if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+            selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
           }
-          games[data.idRoom].czar = playersInRoom[data.idRoom][games[data.idRoom].czarIndex];
-          //------------LOGICA PARA re-setear LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
-          randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
-          currentWhiteCards = data.whiteCards.filter((e: any) => {
-            return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
-          });
-          currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
-            return e.is_correct === true;
-          });
-         }
-         //Se suma 1 a rondaActual
-         games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
-         //Bucle de lógica de juego. Esto ocurre desde ronda 1 hasta terminar el juego
-         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
-         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
-         setTimeout(() => {
-           const selectedCards = []
-           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-             console.log("length,",Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length)
-             if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
-               selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
-             }
-           }
-           selectedCards.push(currentCorrectWhiteCard[0])
-           shuffle(selectedCards)
-           console.log("Select-card",selectedCards)
-           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
-           setTimeout(() => {
-             console.log("end-emit-czar-selecction")
-             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
-           }, 10000);
-         }, 10000);
-       }
+        }
+        selectedCards.push(currentCorrectWhiteCard[0])
+        shuffle(selectedCards)
+        console.log("Select-card",selectedCards)
+        io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
+        setTimeout(() => {
+          console.log("end-emit-czar-selecction")
+          io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 30000);
+      }, 30000);
+
     });
 
     //Evento answer-selection
@@ -228,6 +201,38 @@ try {
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "end-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)
+    });
+
+
+    //Evento new-round
+    socket.on("new-round", (data) => {
+      //Se suma 1 ronda para actualizar número de ronda actual
+      games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
+      //Si fue la última ronda, termina el juego
+      if(games[data.idRoom].rondaActual - 1 == games[data.idRoom].rounds){
+        io.to(data.idRoom).emit("game-ended", playersInRoom[data.idRoom]);
+      }
+      else{
+        //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
+        if (
+          games[data.idRoom].czarIndex + 1 <
+          playersInRoom[data.idRoom].length
+        ) {
+          games[data.idRoom].czarIndex = games[data.idRoom].czarIndex + 1;
+        } else {
+          games[data.idRoom].czarIndex = 0;
+        }
+        //Se envía al cliente la variable game con idroom, rondas, rondaactual y el player que es czar
+        console.log(games[data.idRoom]);
+        io.to(data.idRoom).emit("new-round", games[data.idRoom]);
+        //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios para que el zar pueda elegir su respuesta entre el pool de respuestas
+        setTimeout(() => {
+          io.to(data.idRoom).emit("start-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 30000);
+        setTimeout(() => {
+          io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+        }, 30000);
+      }
     });
 
     //Evento disconnect
