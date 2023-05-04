@@ -112,14 +112,17 @@ try {
 
     //Evento start-game
     socket.on("start-game", (data) => {
-      //Si el juego no existe, se crea
+      var blackCards: any
+      var whiteCards: any
+      console.log("START")
       if(!games[data.idRoom])
       {
         console.log("DATASTARTGAME",data)
+        blackCards = data.blackCards
         // ------------LOGICA PARA inicializar LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
-        var randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
-        var currentWhiteCards = data.whiteCards.filter((e: any) => {
-          return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
+        var randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
+        var currentWhiteCards = whiteCards.filter((e: any) => {
+          return e.black_card_id === blackCards[randomBlackCardIndex].id;
         });
         var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
           return e.is_correct === true;
@@ -136,7 +139,7 @@ try {
           rondaActual: 1,
           czar: playersInRoom[data.idRoom][0],
           czarIndex: 0,
-          currentBlackCard: data.blackCards[randomBlackCardIndex],
+          currentBlackCard: blackCards[randomBlackCardIndex],
           currentWhiteCards: currentWhiteCards,
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
         });
@@ -162,9 +165,9 @@ try {
           }
           games[data.idRoom].czar = playersInRoom[data.idRoom][games[data.idRoom].czarIndex];
           //------------LOGICA PARA re-setear LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
-          randomBlackCardIndex = Math.floor(Math.random() * data.blackCards.length);
-          currentWhiteCards = data.whiteCards.filter((e: any) => {
-            return e.black_card_id === data.blackCards[randomBlackCardIndex].id;
+          randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
+          currentWhiteCards = whiteCards.filter((e: any) => {
+            return e.black_card_id === blackCards[randomBlackCardIndex].id;
           });
           currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
             return e.is_correct === true;
