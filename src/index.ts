@@ -115,9 +115,10 @@ try {
     //Evento start-game
     socket.on("start-game", (data:any) => {
       //Si el juego no existe, se crea
+      console.log("START-GAME")
       if(!games[data.idRoom])
       {
-        console.log("DATASTARTGAME",data)
+        console.log("creación de juego")
         blackCards = data.blackCards
         whiteCards = data.whiteCards
         // ------------LOGICA PARA inicializar LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
@@ -143,11 +144,10 @@ try {
           currentWhiteCards: currentWhiteCards,
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
         });
-        //console.log("GAME",games[data.idRoom]);
         io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
       }
        //Si se excede de la cantidad de rondas elegidas, se emite un mensaje para terminar el juego y mostrar el scoreboard. Bucle termina
-       if( games[data.idRoom].rondaActual - 1 == games[data.idRoom].rounds)
+       if( games[data.idRoom][0].rondaActual - 1 == games[data.idRoom][0].rounds)
        {
          io.to(data.idRoom).emit("game-ended-show-final-scoreboard", playersInRoom[data.idRoom]);
        }
@@ -155,17 +155,18 @@ try {
        else
        {
          //Se revisa si no es ronda inicial para poder re-setear variables
-         if(games[data.idRoom].rondaActual != 1)
+         if(games[data.idRoom][0].rondaActual != 1)
          {
-          //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
-          if (games[data.idRoom].czarIndex + 1 < playersInRoom[data.idRoom].length) {
-            games[data.idRoom].czarIndex = games[data.idRoom].czarIndex + 1;
+          console.log("nueva ronda") //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
+          if (games[data.idRoom][0].czarIndex + 1 < playersInRoom[data.idRoom].length) {
+            games[data.idRoom][0].czarIndex = games[data.idRoom][0].czarIndex + 1;
           } else {
-            games[data.idRoom].czarIndex = 0;
+            games[data.idRoom][0].czarIndex = 0;
           }
-          games[data.idRoom].czar = playersInRoom[data.idRoom][games[data.idRoom].czarIndex];
+          games[data.idRoom][0].czar = playersInRoom[data.idRoom][games[data.idRoom][0].czarIndex];
+          console.log("CZAR",games[data.idRoom])
           //------------LOGICA PARA re-setear LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
-          console.log("blackCards",blackCards)
+          
           randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
           currentWhiteCards = whiteCards.filter((e: any) => {
             return e.black_card_id === blackCards[randomBlackCardIndex].id;
@@ -173,19 +174,18 @@ try {
           currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
             return e.is_correct === true;
           });
-          games[data.idRoom].currentBlackCard = blackCards[randomBlackCardIndex];
-          games[data.idRoom].currentWhiteCards = currentWhiteCards;
-          games[data.idRoom].currentCorrectWhiteCard = currentCorrectWhiteCard[0];
+          games[data.idRoom][0].currentBlackCard = blackCards[randomBlackCardIndex];
+          games[data.idRoom][0].currentWhiteCards = currentWhiteCards;
+          games[data.idRoom][0].currentCorrectWhiteCard = currentCorrectWhiteCard[0];
          }
          //Se suma 1 a rondaActual
-         games[data.idRoom].rondaActual = games[data.idRoom].rondaActual + 1;
+         games[data.idRoom][0].rondaActual = games[data.idRoom][0].rondaActual + 1;
          //Bucle de lógica de juego. Esto ocurre desde ronda 1 hasta terminar el juego
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         setTimeout(() => {
           const selectedCards = []
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-            console.log("length,",Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length)
             if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
               selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
             }
@@ -195,15 +195,13 @@ try {
           //console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           setTimeout(() => {
-            console.log("acá2",playersInRoom[data.idRoom])
-            console.log("acá",games[data.idRoom][0].czar)
             const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
               return objeto.user.id == games[data.idRoom][0].czar.user.id
             })
             if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
               playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
             }
-            console.log("score",playersInRoom[data.idRoom][indice])
+            console.log("end-czar-answer-selection")
             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
           }, 30000);
         }, 30000);
