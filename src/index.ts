@@ -1,6 +1,5 @@
 import app from "./app";
 import http from "http";
-import shuffle from 'lodash.shuffle'
 import { Server } from "socket.io";
 import { roomModel } from "./models/rooms";
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
@@ -190,14 +189,15 @@ try {
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         setTimeout(() => {
-          const selectedCards = []
+          let selectedCards = []
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
             if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
               selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
+              playersInRoom[data.idRoom][i].cartaElegida = {}
             }
           }
           selectedCards.push(currentCorrectWhiteCard[0])
-          shuffle(selectedCards)
+          // shuffle(selectedCards)
           //console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           setTimeout(() => {
