@@ -150,7 +150,9 @@ try {
       }
        //Si se excede de la cantidad de rondas elegidas, se emite un mensaje para terminar el juego y mostrar el scoreboard. Bucle termina
        if( games[data.idRoom][0].rondaActual - 1 == games[data.idRoom][0].rounds)
+      //  if( games[data.idRoom][0].rondaActual - 1 == 2)
        {
+        playersInRoom[data.idRoom].sort((a : any,b: any) => b.score- a.score)
          io.to(data.idRoom).emit("game-ended-show-final-scoreboard", playersInRoom[data.idRoom]);
        }
        //Sino, inicia lógica del juego
@@ -209,6 +211,9 @@ try {
             }
             console.log("end-czar-answer-selection")
             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+            setTimeout(() => {
+              io.to(data.idRoom).emit("reset-game");
+            }, 5000)
           }, 30000);
         }, 30000);
        }
