@@ -129,6 +129,9 @@ try {
         var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
           return e.is_correct === true;
         });
+        currentWhiteCards = whiteCards.filter((e: any) => {
+          return e.black_card_id === blackCards[randomBlackCardIndex].id && e.is_correct === false;
+        });
         // ----------------------------------------------------------------------------------
         if (!games[data.idRoom]) {
           games[data.idRoom] = [];
@@ -173,6 +176,9 @@ try {
           });
           currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
             return e.is_correct === true;
+          });
+          currentWhiteCards = whiteCards.filter((e: any) => {
+            return e.black_card_id === blackCards[randomBlackCardIndex].id && e.is_correct === false;
           });
           games[data.idRoom][0].currentBlackCard = blackCards[randomBlackCardIndex];
           games[data.idRoom][0].currentWhiteCards = currentWhiteCards;
