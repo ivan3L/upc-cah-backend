@@ -91,24 +91,32 @@ try {
 
     //Evento leave-room
     socket.on("leave-room", (data:any) => {
-      const playeinRoomLeavePlayer = playersInRoom[data.idRoom].filter(
-        (item: any) => item.idUser !== data.idUser
-      );
-      console.log("playeinRoomLeavePlayer", playeinRoomLeavePlayer);
-      playersInRoom[data.idRoom] = playeinRoomLeavePlayer;
-      console.log("playeinRoomLeavePlayer", playersInRoom[data.idRoom]);
-      if (
-        playersInRoom[data.idRoom].length > 0 &&
-        !playersInRoom[data.idRoom][0].owner
-      ) {
+      //Busco el indice del jugador
+      const newPlayer = {}
+      const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
+        return objeto.user.id == data.idUser
+      })
+      console.log("data",data)
+      console.log("indice",indice)
+      console.log("Players", playersInRoom[data.idRoom] )
+      // verifico si no es el unico jugador y si es owner
+      if(playersInRoom[data.idRoom].length > 1 && playersInRoom[data.idRoom][indice].owner){
+        console.log("ES OWNER")
+        // si no es el unico jugador y es owner, entonces lo elimino y le pase el owner al jugador en la posición 0
+        playersInRoom[data.idRoom].splice(indice,1)
+
         playersInRoom[data.idRoom][0].owner = true;
-      }
-      if (playersInRoom[data.idRoom].length === 0) {
-        console.log("playersInRoom[data.idRoom] lenght", playersInRoom);
+      } 
+      else if (playersInRoom[data.idRoom].length > 1 && !playersInRoom[data.idRoom][indice].owner){ //Verifico que no sea el unico jugador y que no sea owner
+        //entonces solo elimino el jugador
+        console.log("no es owner")
+        playersInRoom[data.idRoom].splice(indice,1)
+      } else {
+        //pero si es es el unico jugador, elimino el room (Buscar la manera de tambien eliminar acá en base de datos)
+        console.log("Unico jugador")
         delete playersInRoom[data.idRoom];
-        console.log("playersInRoom[data.idRoom] lenght", playersInRoom);
       }
-      io.to(data.idRoom).emit("playersInRoom", playersInRoom[data.idRoom]);
+      io.to(data.idRoom).emit("playersInRoom", {playersInRoom: playersInRoom[data.idRoom] , newPlayer:newPlayer});
     });
 
     //Evento start-game
