@@ -107,6 +107,19 @@ create or replace function fn_retrieve_room(_param jsonb default '{}')
                     else true
                 end
             )
+            and (
+                case 
+                    when _param->'state' is not null
+                    then(
+                        case
+                            when _param->>'state' is null
+                            then state is null
+                            else state = cast(_param->>'state' as bigint)
+                        end
+                    )
+                    else true
+                end
+            )
         ) as rooms into data;
         return jsonb_build_object('data', data, 'error', error);
     end;

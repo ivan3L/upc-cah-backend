@@ -4,9 +4,11 @@ import { Server } from "socket.io";
 import { roomModel } from "./models/rooms";
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
 import { GameModel } from "./interfaces/Game";
+import axios from "axios";
 //import { PlayersCurrentWhiteCardsModel } from "./interfaces/PlayersCurrentWhiteCards";
 const server = http.createServer(app);
 const port = 8080;
+let BASE_URL = "http://localhost:8080";
 
 const io = new Server(server, {
   cors: {
@@ -29,6 +31,17 @@ try {
   io.on("connection", function (socket:any) {
     //Log Cliente conectado
     console.log("Nuevo cliente conectado");
+
+    socket.on("deleteRooms", async(room: any) => {
+      console.log("DELETE GETROOMS")
+
+    })
+
+    socket.on("getRooms", async() => {
+      console.log("EVENTO GETROOMS")
+      const { data } = await axios.get(`${BASE_URL}/room`);
+      io.emit("getRooms", data)
+    })
 
     //Evento crear-room
     socket.on("crear-room", (data:any) => {
@@ -84,13 +97,14 @@ try {
         console.log(
           `Se ha unido al room con id: ${data.idRoom} el usuario : ${data.user.name}`
         );
+
       } else {
         console.log("Error al emitir el evento");
       }
     });
 
     //Evento leave-room
-    socket.on("leave-room", (data:any) => {
+    socket.on("leave-room", async(data:any) => {
       //Busco el indice del jugador
       const newPlayer = {}
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
@@ -114,13 +128,17 @@ try {
       } else {
         //pero si es es el unico jugador, elimino el room (Buscar la manera de tambien eliminar acá en base de datos)
         console.log("Unico jugador")
+        await axios.patch(`${BASE_URL}/room`, {identificador: data.idRoom})
+        console.log("delete")
+        const rooms = await axios.get(`${BASE_URL}/room`);
+        io.emit("getRooms", rooms.data)
         delete playersInRoom[data.idRoom];
       }
       io.to(data.idRoom).emit("playersInRoom", {playersInRoom: playersInRoom[data.idRoom] , newPlayer:newPlayer});
     });
 
     //Evento start-game
-    socket.on("start-game", (data:any) => {
+    socket.on("start-game", async(data:any) => {
       //Si el juego no existe, se crea
       console.log("START-GAME")
       if(!games[data.idRoom])
@@ -155,6 +173,10 @@ try {
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
         });
         io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
+        await axios.patch(`${BASE_URL}/room`, {identificador: data.idRoom})
+        console.log("delete")
+        const rooms = await axios.get(`${BASE_URL}/room`);
+        io.emit("getRooms", rooms.data)
       }
        //Si se excede de la cantidad de rondas elegidas, se emite un mensaje para terminar el juego y mostrar el scoreboard. Bucle termina
        if( games[data.idRoom][0].rondaActual - 1 == games[data.idRoom][0].rounds)
@@ -230,6 +252,8 @@ try {
     //Evento answer-selection
     socket.on("answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard"
+      console.log("data",data)
+      console.log("answer",playersInRoom[data.idRoom])
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
       })

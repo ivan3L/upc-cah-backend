@@ -17,7 +17,7 @@ export class RoomController implements ICrudOperationsController {
     constructor(private readonly service = roomServiceInstance) { }
     @Get()
     async retrieve(@Request() req: express.Request): Promise<ResponseApi<Room[]>> {
-        const data = await this.service.retrieve(req.query as Partial<Room>)
+        const data = await this.service.retrieve()
         if (data instanceof ErrorException) return { error: data.error };
         return { data };
     }

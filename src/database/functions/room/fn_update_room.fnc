@@ -35,6 +35,10 @@ create or replace function fn_update_room(_param jsonb)
                     update ts_room set rounds = _param->>'rounds'
                     where id = _id;
             end if;
+            if _param->'state' is not null then
+                    update ts_room set state = cast(_param->>'state' as bigint)
+                    where id = _id;
+            end if;
             if (_param->'updated_by' is not null) then
                     update ts_room set
                         updated_by = cast(_param->>'updated_by' as bigint),

@@ -6,6 +6,8 @@ export interface RoomModel {
     password?: string
     max_number_player?: number
     owner_id?: number
+    state?: number
+    identificador? : string
 
 }
 export interface RoomDto extends RoomModel, IdUserCreated {}
