@@ -5,25 +5,40 @@ import { roomModel } from "./models/rooms";
 import { PlayerInRoomModel } from "./interfaces/PlayerInRoom";
 import { GameModel } from "./interfaces/Game";
 import axios from "axios";
-//import { PlayersCurrentWhiteCardsModel } from "./interfaces/PlayersCurrentWhiteCards";
+import cors from 'cors'; // Import the cors middleware
+
 const server = http.createServer(app);
 const port = 8080;
-let BASE_URL = "http://localhost:8080";
+let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
+//let BASE_URL = "http://localhost:8080";
 
 const io = new Server(server, {
   cors: {
     origin: "*",
+    methods: ["GET", "POST"], // Add the HTTP methods you want to allow
+    allowedHeaders: ["Content-Type", "Authorization"], // Add the headers you want to allow
   },
 });
 
+app.use(
+  cors({
+      origin: "*",
+      methods: "GET,PUT,POST",
+      allowedHeaders: "*",
+      exposedHeaders: "*",
+      optionsSuccessStatus: 200,
+  })
+);
 server.listen(port, () => {
   console.log(`Server started on port 8080`);
 });
+
 let rooms: roomModel[] = [];
 const playersInRoom: PlayerInRoomModel = {};
 const games: GameModel = {};
-var blackCards: any
-var whiteCards: any
+var blackCards: any;
+var whiteCards: any;
+
 //const playersCurrentWhiteCards: PlayersCurrentWhiteCardsModel = {};
 
 //Cliente se conecta
