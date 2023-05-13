@@ -10,7 +10,7 @@ import cors from 'cors'; // Import the cors middleware
 const server = http.createServer(app);
 const port = 8080;
 let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
-//let BASE_URL = "http://localhost:8080";
+// let BASE_URL = "http://localhost:8080";
 
 const io = new Server(server, {
   cors: {
@@ -246,7 +246,8 @@ try {
           }
           selectedCards.push(currentCorrectWhiteCard[0])
           // shuffle(selectedCards)
-          //console.log("Select-card",selectedCards)
+          selectedCards.sort(() => Math.random() - 0.5);
+          console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           setTimeout(() => {
             const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
