@@ -140,7 +140,8 @@ try {
     //Evento start-game
     socket.on("start-game", async(data:any) => {
       //Si el juego no existe, se crea
-      console.log("START-GAME")
+      console.log("START-GAME", playersInRoom[data.idRoom].length )
+      if(playersInRoom[data.idRoom].length > 1) {     
       if(!games[data.idRoom])
       {
         console.log("creación de juego")
@@ -247,6 +248,9 @@ try {
           }, 30000);
         }, 30000);
        }
+      } else {
+        socket.emit("missingOnePlayer")
+      }
     });
 
     //Evento answer-selection
