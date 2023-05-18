@@ -253,8 +253,8 @@ try {
           }
   
           setTimeout(() => {
-            games[data.idRoom][0].bloqueo = false
             if(games[data.idRoom]){
+            games[data.idRoom][0].bloqueo = false
               ejecutarIntervalo()
             }
           }, 1000)
