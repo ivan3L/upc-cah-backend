@@ -9,8 +9,8 @@ import cors from 'cors'; // Import the cors middleware
 
 const server = http.createServer(app);
 const port = 8080;
-let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
-// let BASE_URL = "http://localhost:8080";
+// let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
+let BASE_URL = "http://localhost:8080";
 
 const io = new Server(server, {
   cors: {
@@ -38,6 +38,8 @@ const playersInRoom: PlayerInRoomModel = {};
 const games: GameModel = {};
 var blackCards: any;
 var whiteCards: any;
+let timerId: any
+var currentCorrectWhiteCard: any
 
 //const playersCurrentWhiteCards: PlayersCurrentWhiteCardsModel = {};
 
@@ -154,8 +156,7 @@ try {
 
     //Evento start-game
     socket.on("start-game", async(data:any) => {
-      //Si el juego no existe, se crea
-      console.log("START-GAME", playersInRoom[data.idRoom].length )
+      //Si el juego no existe, se crea )
       if(playersInRoom[data.idRoom].length > 1) {     
       if(!games[data.idRoom])
       {
@@ -167,7 +168,7 @@ try {
         var currentWhiteCards = whiteCards.filter((e: any) => {
           return e.black_card_id === blackCards[randomBlackCardIndex].id;
         });
-        var currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
+        currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
           return e.is_correct === true;
         });
         currentWhiteCards = whiteCards.filter((e: any) => {
@@ -189,9 +190,9 @@ try {
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
           contador: 30
         });
+        blackCards.splice(randomBlackCardIndex,1);
         io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
         await axios.patch(`${BASE_URL}/room`, {identificador: data.idRoom})
-        console.log("delete")
         const rooms = await axios.get(`${BASE_URL}/room`);
         io.emit("getRooms", rooms.data)
       }
@@ -200,7 +201,9 @@ try {
       //  if( games[data.idRoom][0].rondaActual - 1 == 2)
        {
         playersInRoom[data.idRoom].sort((a : any,b: any) => b.score- a.score)
-         io.to(data.idRoom).emit("game-ended-show-final-scoreboard", playersInRoom[data.idRoom]);
+        delete games[data.idRoom];
+        io.to(data.idRoom).emit("game-ended-show-final-scoreboard", playersInRoom[data.idRoom]);
+        console.log("END", games[data.idRoom])
        }
        //Sino, inicia lógica del juego
        else
@@ -215,7 +218,6 @@ try {
             games[data.idRoom][0].czarIndex = 0;
           }
           games[data.idRoom][0].czar = playersInRoom[data.idRoom][games[data.idRoom][0].czarIndex];
-          console.log("CZAR",games[data.idRoom])
           //------------LOGICA PARA re-setear LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
           
           randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
@@ -231,6 +233,8 @@ try {
           games[data.idRoom][0].currentBlackCard = blackCards[randomBlackCardIndex];
           games[data.idRoom][0].currentWhiteCards = currentWhiteCards;
           games[data.idRoom][0].currentCorrectWhiteCard = currentCorrectWhiteCard[0];
+          blackCards.splice(randomBlackCardIndex,1);
+
          }
          //Se suma 1 a rondaActual
          games[data.idRoom][0].rondaActual = games[data.idRoom][0].rondaActual + 1;
@@ -238,7 +242,7 @@ try {
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
         io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           let selectedCards = []
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
             if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
@@ -272,13 +276,49 @@ try {
 
     //Evento answer-selection
     socket.on("answer-selection", (data:any) => {
+      console.log("ANSWER")
+      let next = true
       //recibe estructura user y carta elegida como "whiteCard"
-      console.log("data",data)
-      console.log("answer",playersInRoom[data.idRoom])
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
       })
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
+      // Logica para pasar de ronda si todos eligen
+      for (let i = 0; i< playersInRoom[data.idRoom].length; i++) {
+        if( i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length === 0) {
+          console.log("aun faltan por elegir")
+          next = false
+        }
+      }
+      if (next) {
+        console.log("time", timerId)
+        clearTimeout(timerId)
+        let selectedCards = []
+        for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
+          if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+            selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
+            playersInRoom[data.idRoom][i].cartaElegida = {}
+          }
+        }
+        selectedCards.push(currentCorrectWhiteCard[0])
+        // shuffle(selectedCards)
+        selectedCards.sort(() => Math.random() - 0.5);
+        console.log("Select-card",selectedCards)
+        io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
+        setTimeout(() => {
+          const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
+            return objeto.user.id == games[data.idRoom][0].czar.user.id
+          })
+          if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
+            playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
+          }
+          console.log("end-czar-answer-selection")
+          io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+          setTimeout(() => {
+            io.to(data.idRoom).emit("reset-game");
+          }, 5000)
+        }, 30000);
+      }
 
       //No se retorna nada ya que el evento solo sirve para recopilar las respuestas,
       //el total de respuesta se envía a través de "start-czar-answer-selection" que es un evento que
