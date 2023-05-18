@@ -33,6 +33,7 @@ server.listen(port, () => {
   console.log(`Server started on port 8080`);
 });
 
+
 let rooms: roomModel[] = [];
 const playersInRoom: PlayerInRoomModel = {};
 const games: GameModel = {};
@@ -156,7 +157,6 @@ try {
 
     //Evento start-game
     socket.on("start-game", async(data:any) => {
-      //Si el juego no existe, se crea )
       if(playersInRoom[data.idRoom].length > 1) {     
       if(!games[data.idRoom])
       {
@@ -188,7 +188,8 @@ try {
           currentBlackCard: blackCards[randomBlackCardIndex],
           currentWhiteCards: currentWhiteCards,
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
-          contador: 30
+          contador: 30,
+          bloqueo: false
         });
         blackCards.splice(randomBlackCardIndex,1);
         io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
@@ -240,7 +241,26 @@ try {
          games[data.idRoom][0].rondaActual = games[data.idRoom][0].rondaActual + 1;
          //Bucle de lógica de juego. Esto ocurre desde ronda 1 hasta terminar el juego
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
-        io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+        function ejecutarIntervalo() {
+          if (games[data.idRoom][0].bloqueo) {
+            return; 
+          }
+          games[data.idRoom][0].bloqueo = true
+          games[data.idRoom][0].contador = games[data.idRoom][0].contador - 1
+          io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+          if (games[data.idRoom][0].contador == 0 ) {
+            games[data.idRoom][0].contador = 30
+          }
+  
+          setTimeout(() => {
+            games[data.idRoom][0].bloqueo = false
+            if(games[data.idRoom]){
+              ejecutarIntervalo()
+            }
+          }, 1000)
+        }
+
+        ejecutarIntervalo()
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         timerId = setTimeout(() => {
           let selectedCards = []
@@ -264,6 +284,8 @@ try {
             console.log("end-czar-answer-selection")
             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
             setTimeout(() => {
+              games[data.idRoom][0].contador = 30
+              io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
               io.to(data.idRoom).emit("reset-game");
             }, 5000)
           }, 30000);
@@ -286,12 +308,10 @@ try {
       // Logica para pasar de ronda si todos eligen
       for (let i = 0; i< playersInRoom[data.idRoom].length; i++) {
         if( i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length === 0) {
-          console.log("aun faltan por elegir")
           next = false
         }
       }
       if (next) {
-        console.log("time", timerId)
         clearTimeout(timerId)
         let selectedCards = []
         for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
@@ -304,6 +324,8 @@ try {
         // shuffle(selectedCards)
         selectedCards.sort(() => Math.random() - 0.5);
         console.log("Select-card",selectedCards)
+        games[data.idRoom][0].contador = 30
+        io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
         io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
         setTimeout(() => {
           const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
@@ -315,6 +337,8 @@ try {
           console.log("end-czar-answer-selection")
           io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
           setTimeout(() => {
+            games[data.idRoom][0].contador = 30
+            io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
             io.to(data.idRoom).emit("reset-game");
           }, 5000)
         }, 30000);
@@ -344,15 +368,15 @@ try {
       //debe estar escuchándose en el cliente(front)
     });
 
-    socket.on('decrementarTemporizador', (data: any) => {
-      console.log("decrementar",data)
-      games[data.idRoom][0].contador = games[data.idRoom][0].contador - 1
-      if (games[data.idRoom][0].contador < 0) {
-        games[data.idRoom][0].contador = 30; // Reiniciar el temporizador a 30 cuando llegue a 0
-      }
-      // Emitir el nuevo valor del temporizador a todos los clientes conectados
-      io.emit('temporizador', games[data.idRoom][0].contador);
-    });
+    // socket.on('decrementarTemporizador', (data: any) => {
+    //   console.log("decrementar",data)
+    //   games[data.idRoom][0].contador = games[data.idRoom][0].contador - 1
+    //   if (games[data.idRoom][0].contador < 0) {
+    //     games[data.idRoom][0].contador = 30; // Reiniciar el temporizador a 30 cuando llegue a 0
+    //   }
+    //   // Emitir el nuevo valor del temporizador a todos los clientes conectados
+    //   io.emit('temporizador', games[data.idRoom][0].contador);
+    // });
 
 
 
