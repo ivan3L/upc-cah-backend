@@ -272,8 +272,10 @@ try {
           }
           selectedCards.push(currentCorrectWhiteCard[0])
           selectedCards.sort(() => Math.random() - 0.5);
-          console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
+          for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
+            playersInRoom[data.idRoom][i].cartaElegida = {}
+          }
           setTimeout(() => {
             const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
               return objeto.user.id == games[data.idRoom][0].czar.user.id
@@ -327,6 +329,9 @@ try {
         games[data.idRoom][0].contador = 30
         io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
         io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
+        for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
+          playersInRoom[data.idRoom][i].cartaElegida = {}
+        }
         setTimeout(() => {
           const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
             return objeto.user.id == games[data.idRoom][0].czar.user.id
