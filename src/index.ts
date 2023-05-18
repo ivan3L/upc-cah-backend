@@ -187,6 +187,7 @@ try {
           currentBlackCard: blackCards[randomBlackCardIndex],
           currentWhiteCards: currentWhiteCards,
           currentCorrectWhiteCard: currentCorrectWhiteCard[0],
+          contador: 30
         });
         io.to(data.idRoom).emit("moveToStartGame", data.idRoom);
         await axios.patch(`${BASE_URL}/room`, {identificador: data.idRoom})
@@ -235,6 +236,7 @@ try {
          games[data.idRoom][0].rondaActual = games[data.idRoom][0].rondaActual + 1;
          //Bucle de lógica de juego. Esto ocurre desde ronda 1 hasta terminar el juego
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
+        io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         setTimeout(() => {
           let selectedCards = []
@@ -245,7 +247,6 @@ try {
             }
           }
           selectedCards.push(currentCorrectWhiteCard[0])
-          // shuffle(selectedCards)
           selectedCards.sort(() => Math.random() - 0.5);
           console.log("Select-card",selectedCards)
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
@@ -284,6 +285,7 @@ try {
       //debe estar escuchándose en el cliente(front)
     });
 
+
     //Evento czar-answer-selection
     socket.on("czar-answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard" del zar
@@ -301,6 +303,18 @@ try {
       //el total de respuesta se envía a través de "end-czar-answer-selection" que es un evento que
       //debe estar escuchándose en el cliente(front)
     });
+
+    socket.on('decrementarTemporizador', (data: any) => {
+      console.log("decrementar",data)
+      games[data.idRoom][0].contador = games[data.idRoom][0].contador - 1
+      if (games[data.idRoom][0].contador < 0) {
+        games[data.idRoom][0].contador = 30; // Reiniciar el temporizador a 30 cuando llegue a 0
+      }
+      // Emitir el nuevo valor del temporizador a todos los clientes conectados
+      io.emit('temporizador', games[data.idRoom][0].contador);
+    });
+
+
 
     //Evento disconnect
     socket.on("disconnect", () => {
