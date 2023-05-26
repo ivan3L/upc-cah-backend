@@ -8,6 +8,7 @@ import room_deck from '../components/room_deck/room_deck.routes'
 import user_type from '../components/user_type/user_type.routes'
 import white_card from '../components/white_card/white_card.routes'
 import googlelogin from '../components/googlelogin/googlelogin.routes'
+import test from '../components/test/test.routes'
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/room_deck',room_deck)
 router.use('/user_type',user_type)
 router.use('/white_card',white_card)
 router.use('/google', googlelogin)
+router.use('/test', test)
 
 export default router;
