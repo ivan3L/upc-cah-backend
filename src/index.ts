@@ -37,6 +37,7 @@ server.listen(port, () => {
 let rooms: roomModel[] = [];
 const playersInRoom: PlayerInRoomModel = {};
 const games: GameModel = {};
+var max_number_player: number;
 var blackCards: any;
 var whiteCards: any;
 let timerId: any
@@ -63,6 +64,8 @@ try {
 
     //Evento crear-room
     socket.on("crear-room", (data:any) => {
+      console.log("DATACREATE",data)
+      max_number_player= data.max_number_player
       rooms.push({
         roomName: `room-${data.roomName}`,
         players: [socket.id],
@@ -86,6 +89,7 @@ try {
       io.to(data.idRoom).emit("playersInRoom", {
         playersInRoom: playersInRoom[data.idRoom],
         newPlayer: newPlayer,
+        max_number_player: max_number_player
       });
       console.log(
         `Se ha creado el room con id: ${data.idRoom} y el usuario : ${data.name}`
@@ -111,6 +115,7 @@ try {
         //   playersInRoom[data.idRoom][playersInRoom[data.idRoom].length - 1];
         io.to(data.idRoom).emit("playersInRoom", {
           playersInRoom: playersInRoom[data.idRoom],
+          max_number_player: max_number_player
         });
         console.log(
           `Se ha unido al room con id: ${data.idRoom} el usuario : ${data.user.name}`
@@ -152,7 +157,7 @@ try {
         io.emit("getRooms", rooms.data)
         delete playersInRoom[data.idRoom];
       }
-      io.to(data.idRoom).emit("playersInRoom", {playersInRoom: playersInRoom[data.idRoom] , newPlayer:newPlayer});
+      io.to(data.idRoom).emit("playersInRoom", {playersInRoom: playersInRoom[data.idRoom] , newPlayer:newPlayer, max_number_player: max_number_player});
     });
 
     //Evento start-game
