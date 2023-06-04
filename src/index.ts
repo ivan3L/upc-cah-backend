@@ -41,6 +41,7 @@ var max_number_player: number;
 var blackCards: any;
 var whiteCards: any;
 let timerId: any
+let timerIdZar: any
 var currentCorrectWhiteCard: any
 
 //const playersCurrentWhiteCards: PlayersCurrentWhiteCardsModel = {};
@@ -281,7 +282,7 @@ try {
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
             playersInRoom[data.idRoom][i].cartaElegida = {}
           }
-          setTimeout(() => {
+         timerIdZar = setTimeout(() => {
             const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
               return objeto.user.id == games[data.idRoom][0].czar.user.id
             })
@@ -367,6 +368,18 @@ try {
         return objeto.user.id == data.userId
       })
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
+      clearTimeout(timerIdZar)
+      if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
+        playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
+      }
+      console.log("end-czar-answer-selection")
+      io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
+      setTimeout(() => {
+        games[data.idRoom][0].contador = 30
+        io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+        io.to(data.idRoom).emit("reset-game");
+      }, 5000)
+
 
       // if(data.whiteCard.id == games[data.idRoom][0].currentCorrectWhiteCard.id){
       //   playersInRoom[data.idRoom][data.userId].score =  playersInRoom[data.idRoom][data.userId].score + 1
