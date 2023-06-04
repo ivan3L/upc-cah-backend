@@ -265,7 +265,6 @@ try {
             }
           }, 1000)
         }
-
         ejecutarIntervalo()
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         timerId = setTimeout(() => {
@@ -338,7 +337,7 @@ try {
         for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
           playersInRoom[data.idRoom][i].cartaElegida = {}
         }
-        setTimeout(() => {
+        timerIdZar = setTimeout(() => {
           const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
             return objeto.user.id == games[data.idRoom][0].czar.user.id
           })
@@ -365,7 +364,7 @@ try {
     socket.on("czar-answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard" del zar
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
-        return objeto.user.id == data.userId
+        return objeto.user.id == games[data.idRoom][0].czar.user.id
       })
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       clearTimeout(timerIdZar)
