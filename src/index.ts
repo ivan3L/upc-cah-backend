@@ -269,7 +269,7 @@ try {
         timerId = setTimeout(() => {
           let selectedCards = []
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-            if(Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+            if( i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
               selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
               playersInRoom[data.idRoom][i].cartaElegida = {}
             }
