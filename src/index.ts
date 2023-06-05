@@ -171,19 +171,17 @@ try {
         whiteCards = data.whiteCards
         // ------------LOGICA PARA inicializar LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
         var randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
-        var currentWhiteCards = whiteCards.filter((e: any) => {
+        var currentWhiteCardsTemp = whiteCards.filter((e: any) => {
           return e.black_card_id === blackCards[randomBlackCardIndex].id;
         });
-        currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
+        currentCorrectWhiteCard = currentWhiteCardsTemp.filter((e: any) => {
           return e.is_correct === true;
         });
-        currentWhiteCards = whiteCards.filter((e: any) => {
+        var currentWhiteCards = whiteCards.filter((e: any) => {
           return e.black_card_id === blackCards[randomBlackCardIndex].id && e.is_correct === false;
         });
         // ----------------------------------------------------------------------------------
-        if (!games[data.idRoom]) {
           games[data.idRoom] = [];
-        }
         //Se crea la variable juego
         games[data.idRoom].push({
           id: data.idRoom,
@@ -228,10 +226,10 @@ try {
           //------------LOGICA PARA re-setear LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
           
           randomBlackCardIndex = Math.floor(Math.random() * blackCards.length);
-          currentWhiteCards = whiteCards.filter((e: any) => {
+          currentWhiteCardsTemp = whiteCards.filter((e: any) => {
             return e.black_card_id === blackCards[randomBlackCardIndex].id;
           });
-          currentCorrectWhiteCard = currentWhiteCards.filter((e: any) => {
+          currentCorrectWhiteCard = currentWhiteCardsTemp.filter((e: any) => {
             return e.is_correct === true;
           });
           currentWhiteCards = whiteCards.filter((e: any) => {
@@ -265,6 +263,7 @@ try {
             }
           }, 1000)
         }
+
         ejecutarIntervalo()
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         timerId = setTimeout(() => {
@@ -305,7 +304,7 @@ try {
 
     //Evento answer-selection
     socket.on("answer-selection", (data:any) => {
-      console.log("ANSWER")
+      console.log("ANSWER", data.whiteCard )
       let next = true
       //recibe estructura user y carta elegida como "whiteCard"
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
@@ -322,7 +321,7 @@ try {
         clearTimeout(timerId)
         let selectedCards = []
         for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-          if( i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+          if(i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
             selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
             playersInRoom[data.idRoom][i].cartaElegida = {}
           }
@@ -337,7 +336,7 @@ try {
         for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
           playersInRoom[data.idRoom][i].cartaElegida = {}
         }
-        timerIdZar = setTimeout(() => {
+       timerIdZar = setTimeout(() => {
           const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
             return objeto.user.id == games[data.idRoom][0].czar.user.id
           })
@@ -364,13 +363,14 @@ try {
     socket.on("czar-answer-selection", (data:any) => {
       //recibe estructura user y carta elegida como "whiteCard" del zar
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
-        return objeto.user.id == games[data.idRoom][0].czar.user.id
+        return objeto.user.id == data.userId
       })
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       clearTimeout(timerIdZar)
       if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
         playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
       }
+      playersInRoom[data.idRoom][indice].cartaElegida = {}
       console.log("end-czar-answer-selection")
       io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
       setTimeout(() => {
