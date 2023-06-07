@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
 router.post('/', async(req, res, next) => {
     try{
         const param = req.body as Black_CardDto
-        console.log(param)
+        //console.log(param)
         const data = await black_cardControllerInstance.create(param)
         if (data instanceof ErrorException) return res.status(500).json(data)
         return res.status(200).json(data)

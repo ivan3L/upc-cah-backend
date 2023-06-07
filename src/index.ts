@@ -58,14 +58,14 @@ try {
     })
 
     socket.on("getRooms", async() => {
-      console.log("EVENTO GETROOMS")
+      //console.log("EVENTO GETROOMS")
       const { data } = await axios.get(`${BASE_URL}/room`);
       io.emit("getRooms", data)
     })
 
     //Evento crear-room
     socket.on("crear-room", (data:any) => {
-      console.log("DATACREATE",data)
+      console.log("Creando room ",data.roomName)
       max_number_player= data.max_number_player
       rooms.push({
         roomName: `room-${data.roomName}`,
@@ -93,14 +93,14 @@ try {
         max_number_player: max_number_player
       });
       console.log(
-        `Se ha creado el room con id: ${data.idRoom} y el usuario : ${data.name}`
+        `Se ha creado el room con id: ${data.idRoom} e ingresó el usuario : ${data.name}`
       );
     });
 
     //Evento join-room
     socket.on("join-room", (data:any) => {
       if (data) {
-        console.log("data", data);
+        //console.log("data", data);
         socket.join(data.idRoom);
         playersInRoom[data.idRoom].push({
           id: socket.id,
@@ -134,9 +134,9 @@ try {
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.idUser
       })
-      console.log("data",data)
-      console.log("indice",indice)
-      console.log("Players", playersInRoom[data.idRoom] )
+      //console.log("data",data)
+      //console.log("indice",indice)
+      //console.log("Players", playersInRoom[data.idRoom] )
       // verifico si no es el unico jugador y si es owner
       if(playersInRoom[data.idRoom].length > 1 && playersInRoom[data.idRoom][indice].owner){
         console.log("ES OWNER")
@@ -166,7 +166,7 @@ try {
       if(playersInRoom[data.idRoom].length > 1) {     
       if(!games[data.idRoom])
       {
-        console.log("creación de juego")
+        console.log("-------------------------Inicio de partida------------------------")
         blackCards = data.blackCards
         whiteCards = data.whiteCards
         // ------------LOGICA PARA inicializar LAS CARTAS BLANCAS Y NEGRA QUE SE VAN A MOSTRAR ------
@@ -211,12 +211,12 @@ try {
         console.log("END", games[data.idRoom])
        }
        //Sino, inicia lógica del juego
-       else
+       else if(games[data.idRoom])
        {
          //Se revisa si no es ronda inicial para poder re-setear variables
          if(games[data.idRoom][0].rondaActual != 1)
          {
-          console.log("nueva ronda") //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
+          console.log("-------------- RONDA ",games[data.idRoom][0].rondaActual, " ----------------"); //Se cambia de zar (si ya todos fueron zar, se regresa al zar inicial)
           if (games[data.idRoom][0].czarIndex + 1 < playersInRoom[data.idRoom].length) {
             games[data.idRoom][0].czarIndex = games[data.idRoom][0].czarIndex + 1;
           } else {
@@ -243,7 +243,7 @@ try {
          }
          //Se suma 1 a rondaActual
          games[data.idRoom][0].rondaActual = games[data.idRoom][0].rondaActual + 1;
-         //Bucle de lógica de juego. Esto ocurre desde ronda 1 hasta terminar el juego
+         //Bucle de lógica de juego. Esto ocurre desde r| hasta terminar el juego
         //Se espera 30 segundos y se envían las respuestas elegidas por los usuarios
         function ejecutarIntervalo() {
           if (games[data.idRoom][0].bloqueo) {
@@ -276,6 +276,15 @@ try {
           }
           selectedCards.push(currentCorrectWhiteCard[0])
           selectedCards.sort(() => Math.random() - 0.5);
+
+          console.log("---------Cartas agrupadas para mostrar al zar------------")
+          console.log(selectedCards.map(card => ({
+            id: card.id,
+            answer: card.answer,
+            is_correct: card.is_correct,
+            black_card_id: card.black_card_id
+          })));
+
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
             playersInRoom[data.idRoom][i].cartaElegida = {}
@@ -287,12 +296,15 @@ try {
             if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
               playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
             }
-            console.log("end-czar-answer-selection")
+            console.log("end-czar-answer-selection linea 300")
             io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
             setTimeout(() => {
-              games[data.idRoom][0].contador = 30
-              io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
-              io.to(data.idRoom).emit("reset-game");
+              if(games[data.idRoom])
+              {
+                games[data.idRoom][0].contador = 30
+                io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+                io.to(data.idRoom).emit("reset-game");
+              }
             }, 5000)
           }, 30000);
         }, 30000);
@@ -304,12 +316,18 @@ try {
 
     //Evento answer-selection
     socket.on("answer-selection", (data:any) => {
-      console.log("ANSWER", data.whiteCard )
       let next = true
       //recibe estructura user y carta elegida como "whiteCard"
       const indice = playersInRoom[data.idRoom].findIndex((objeto: any) => {
         return objeto.user.id == data.userId
       })
+      console.log("--- ",playersInRoom[data.idRoom][indice].name, "eligió la carta:")
+      console.log({
+        id: data.whiteCard.id,
+        answer: data.whiteCard.answer,
+        is_correct: data.whiteCard.is_correct,
+        black_card_id: data.whiteCard.black_card_id
+      });
       playersInRoom[data.idRoom][indice].cartaElegida = data.whiteCard;
       // Logica para pasar de ronda si todos eligen
       for (let i = 0; i< playersInRoom[data.idRoom].length; i++) {
@@ -329,7 +347,14 @@ try {
         selectedCards.push(currentCorrectWhiteCard[0])
         // shuffle(selectedCards)
         selectedCards.sort(() => Math.random() - 0.5);
-        console.log("Select-card",selectedCards)
+        console.log("---------Cartas agrupadas para mostrar al zar------------")
+        console.log(selectedCards.map(card => ({
+          id: card.id,
+          answer: card.answer,
+          is_correct: card.is_correct,
+          black_card_id: card.black_card_id
+        })));
+        
         games[data.idRoom][0].contador = 30
         io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
         io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
@@ -343,12 +368,15 @@ try {
           if (games[data.idRoom][0].czar.cartaElegida.id == games[data.idRoom][0].currentCorrectWhiteCard.id) {
             playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
           }
-          console.log("end-czar-answer-selection")
+          console.log("end-czar-answer-selectio linea 372")
           io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
           setTimeout(() => {
-            games[data.idRoom][0].contador = 30
-            io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
-            io.to(data.idRoom).emit("reset-game");
+            if(games[data.idRoom])
+            {
+              games[data.idRoom][0].contador = 30
+              io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+              io.to(data.idRoom).emit("reset-game");
+            }
           }, 5000)
         }, 30000);
       }
@@ -371,12 +399,15 @@ try {
         playersInRoom[data.idRoom][indice].score = playersInRoom[data.idRoom][indice].score + 1
       }
       playersInRoom[data.idRoom][indice].cartaElegida = {}
-      console.log("end-czar-answer-selection")
+      console.log("end-czar-answer-selection linea 403")
       io.to(data.idRoom).emit("end-czar-answer-selection", playersInRoom[data.idRoom]);
       setTimeout(() => {
-        games[data.idRoom][0].contador = 30
-        io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
-        io.to(data.idRoom).emit("reset-game");
+        if(games[data.idRoom])
+            {
+              games[data.idRoom][0].contador = 30
+              io.to(data.idRoom).emit('temporizador', games[data.idRoom][0].contador);
+              io.to(data.idRoom).emit("reset-game");
+            }
       }, 5000)
 
 

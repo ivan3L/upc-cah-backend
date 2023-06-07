@@ -51,7 +51,7 @@ export class CrudRepository<M, DTO extends IdUserCreated, UPDATE extends IdUserU
     try {
       const { rows } = await this.pool.query(getQueryCreateSql(this.nameTable), [param])
       const { data, error, logs } = rows[0].query as { data: M[], error: Error[], logs: Logs[] }
-      console.log(rows[0].query)
+      //console.log(rows[0].query)
       if (logs) {
         if (Object.keys(logs).length > 0) console.log({ logs })
       }

@@ -13,7 +13,7 @@ export class RoomService extends CrudService<Room, RoomDto, RoomUpdate> {
     return data
   }
   async update(param: RoomUpdate): Promise<Room | ErrorException> {
-    console.log("PARAM",param)
+    //console.log("PARAM",param)
     const room = await this.repository.retrieve({identificador: param.identificador})
     if (room instanceof ErrorException) return room;
     const data = await this.repository.update({id: room[0].id, state:0})
