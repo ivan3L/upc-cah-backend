@@ -267,23 +267,35 @@ try {
         ejecutarIntervalo()
         io.to(data.idRoom).emit("start-game", games[data.idRoom][0]);
         timerId = setTimeout(() => {
-          let selectedCards = []
-          for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-            if( i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
-              selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
-              playersInRoom[data.idRoom][i].cartaElegida = {}
+          let selectedCards = [];
+          let selectedCardIds: string[] = [];
+          
+          for (let i = 0; i < playersInRoom[data.idRoom].length; i++) {
+            if (i !== games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+              const cartaElegida = playersInRoom[data.idRoom][i].cartaElegida;
+              const cartaElegidaId = cartaElegida.id;
+          
+              if (!selectedCardIds.includes(cartaElegidaId)) {
+                selectedCards.push(cartaElegida);
+                selectedCardIds.push(cartaElegidaId);
+              }
+          
+              playersInRoom[data.idRoom][i].cartaElegida = {};
             }
           }
+          
           selectedCards.push(currentCorrectWhiteCard[0])
           selectedCards.sort(() => Math.random() - 0.5);
 
           console.log("---------Cartas agrupadas para mostrar al zar------------")
-          console.log(selectedCards.map(card => ({
+          /*console.log(selectedCards.map(card => ({
             id: card.id,
             answer: card.answer,
             is_correct: card.is_correct,
             black_card_id: card.black_card_id
           })));
+*/
+          console.log(selectedCards)
 
           io.to(data.idRoom).emit("start-czar-answer-selection", selectedCards)
           for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
@@ -337,13 +349,24 @@ try {
       }
       if (next) {
         clearTimeout(timerId)
-        let selectedCards = []
-        for (let i = 0 ; i< playersInRoom[data.idRoom].length; i++){
-          if(i != games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
-            selectedCards.push(playersInRoom[data.idRoom][i].cartaElegida)
-            playersInRoom[data.idRoom][i].cartaElegida = {}
+        let selectedCards = [];
+        let selectedCardIds: string[] = [];
+        
+        for (let i = 0; i < playersInRoom[data.idRoom].length; i++) {
+          if (i !== games[data.idRoom][0].czarIndex && Object.keys(playersInRoom[data.idRoom][i].cartaElegida).length > 0) {
+            const cartaElegida = playersInRoom[data.idRoom][i].cartaElegida;
+            const cartaElegidaId = cartaElegida.id;
+        
+            if (!selectedCardIds.includes(cartaElegidaId)) {
+              selectedCards.push(cartaElegida);
+              selectedCardIds.push(cartaElegidaId);
+            }
+        
+            playersInRoom[data.idRoom][i].cartaElegida = {};
           }
         }
+        
+
         selectedCards.push(currentCorrectWhiteCard[0])
         // shuffle(selectedCards)
         selectedCards.sort(() => Math.random() - 0.5);
