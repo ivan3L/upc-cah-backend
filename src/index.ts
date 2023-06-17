@@ -20,6 +20,8 @@ const io = new Server(server, {
   },
 });
 
+export { io };
+
 app.use(
   cors({
       origin: "*",
@@ -58,13 +60,14 @@ try {
     })
 
     socket.on("getRooms", async() => {
-      //console.log("EVENTO GETROOMS")
+      console.log("EVENTO GETROOMS")
       const { data } = await axios.get(`${BASE_URL}/room`);
       io.emit("getRooms", data)
     })
 
     //Evento crear-room
     socket.on("crear-room", (data:any) => {
+      console.log(data)
       console.log("Creando room ",data.roomName)
       max_number_player= data.max_number_player
       rooms.push({
