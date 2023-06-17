@@ -3,7 +3,9 @@ import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
-let BASE_URL = "http://localhost:8080";
+
+let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
+//let BASE_URL = "http://localhost:8080";
 
 let aux = 0;
 //let room: any = []
