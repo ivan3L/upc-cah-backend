@@ -1,8 +1,8 @@
 import http from "k6/http";
 
 export let options = {
-  vus: 10,
-  iterations: 10,
+  vus: 3,
+  iterations: 5,
   // duration: '12s',
 };
 

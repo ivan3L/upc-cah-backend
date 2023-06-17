@@ -21,6 +21,7 @@
     "@types/node-fetch": "^2.6.2",
     "@types/pg": "^8.6.5",
     "@types/socket.io-client": "^3.0.0",
+    "@types/uuid": "^9.0.2",
     "@types/ws": "^8.5.4",
     "typescript": "^4.7.4"
   },
@@ -42,6 +43,7 @@
     "swagger-ui-express": "^4.5.0",
     "ts-node": "^10.9.1",
     "tsoa": "^4.1.1",
+    "uuid": "^9.0.0",
     "ws": "^8.12.0"
   }
 }
