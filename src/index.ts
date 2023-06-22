@@ -9,8 +9,8 @@ import cors from 'cors'; // Import the cors middleware
 
 const server = http.createServer(app);
 const port = 8080;
-// let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
-let BASE_URL = "http://localhost:8080";
+let BASE_URL = "http://loadbalancer.wtm-upc.online:8080";
+//let BASE_URL = "http://localhost:8080";
 
 const io = new Server(server, {
   cors: {
